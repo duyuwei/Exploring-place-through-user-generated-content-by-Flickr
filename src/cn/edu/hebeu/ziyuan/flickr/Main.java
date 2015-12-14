@@ -87,21 +87,22 @@ public class Main {
 
 		try {
 
-			//获得总页数
+			// 获得总页数
 			PhotoList<Photo> temp = photosInterface.search(params, per_page, 1);
 			pages = temp.getPages();
 			per_page = temp.getPerPage();
-			//显示信息
+			// 显示信息
 			System.out.println("按每" + per_page + "页条记录检索，共" + pages + "页");
 			System.out.println("共计" + temp.getTotal() + "条数据");
-			
-			
-			//
-			for (int i = 1; i <= pages; i++) {
 
+		} catch (FlickrException e) {
+			System.out.println("首次图片信息获取出现问题");
+			e.printStackTrace();
+		}
+
+		for (int i = 1; i <= pages; i++) {
+			try {
 				PhotoList<Photo> photoList = photosInterface.search(params, per_page, i);
-
-				//System.out.println(photoList);
 				for (int j = 0; j < photoList.size(); j++) {
 					Photo photo = photoList.get(j);
 					System.out.println("第" + i + "页，第" + (j + 1) + "条");
@@ -119,7 +120,7 @@ public class Main {
 						pstmt = conn.prepareStatement(sql);
 						pstmt.setString(1, photoId);
 						pstmt.setString(2, ownerId);
-						
+
 						pstmt.executeUpdate();
 					} catch (SQLException e) {
 						System.out.println("错误：第" + total + "张图片信息保存失败！！！");
@@ -127,15 +128,14 @@ public class Main {
 					}
 					System.out.println("第" + total + "张图片信息保存成功");
 					System.out.println("------------------------------------------------");
-
 				}
-
+			} catch (FlickrException e1) {
+				e1.printStackTrace();
+				System.out.println("第" + i + "页保存失败，正在重试！");
+				i--;
 			}
-
-		} catch (FlickrException e) {
-			System.out.println("图片信息获取出现问题");
-			e.printStackTrace();
 		}
+
 	}
 
 	@Test
