@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -63,6 +65,8 @@ public class Main {
 
 		SearchParameters params = new SearchParameters();
 		params.setBBox("114.0333", "39.7667", "116.5333", "40.0167");
+		Date maxTakenDate = new Date(115, 11, 15);
+		Date minTakenDate = new Date(115, 11, 14);
 		int pages = 0;
 		int per_page = 250;// 每页记录数
 		long total = 0;
@@ -85,57 +89,89 @@ public class Main {
 			e1.printStackTrace();
 		}
 
-		try {
+		for (int day = 0; day < 12.5 * 265; day++) {
 
-			// 获得总页数
-			PhotoList<Photo> temp = photosInterface.search(params, per_page, 1);
-			pages = temp.getPages();
-			per_page = temp.getPerPage();
-			// 显示信息
-			System.out.println("按每" + per_page + "页条记录检索，共" + pages + "页");
-			System.out.println("共计" + temp.getTotal() + "条数据");
+			params.setMaxTakenDate(maxTakenDate);
+			params.setMinTakenDate(minTakenDate);
+			System.out.println(maxTakenDate.toString());
 
-		} catch (FlickrException e) {
-			System.out.println("首次图片信息获取出现问题");
-			e.printStackTrace();
-		}
-
-		for (int i = 1; i <= pages; i++) {
 			try {
-				PhotoList<Photo> photoList = photosInterface.search(params, per_page, i);
-				for (int j = 0; j < photoList.size(); j++) {
-					Photo photo = photoList.get(j);
-					System.out.println("第" + i + "页，第" + (j + 1) + "条");
+				// 获得总页数
+				PhotoList<Photo> temp = photosInterface.search(params, per_page, 1);
+				pages = temp.getPages();
+				per_page = temp.getPerPage();
+				// 显示信息
+				System.out.println("按每" + per_page + "页条记录检索，共" + pages + "页");
+				System.out.println("共计" + temp.getTotal() + "条数据");
 
-					String photoId = photo.getId();
-					System.out.print("照片ID：" + photoId);// 照片ID
-
-					String ownerId = photo.getOwner().getId();// 用户ID
-					System.out.print("用户ID：" + ownerId);
-
-					System.out.println("正在尝试保存第" + ++total + "张图片信息");
-
-					try {
-						// photoId,ownerId
-						pstmt = conn.prepareStatement(sql);
-						pstmt.setString(1, photoId);
-						pstmt.setString(2, ownerId);
-
-						pstmt.executeUpdate();
-					} catch (SQLException e) {
-						System.out.println("错误：第" + total + "张图片信息保存失败！！！");
-						e.printStackTrace();
-					}
-					System.out.println("第" + total + "张图片信息保存成功");
-					System.out.println("------------------------------------------------");
-				}
-			} catch (FlickrException e1) {
-				e1.printStackTrace();
-				System.out.println("第" + i + "页保存失败，正在重试！");
-				i--;
+			} catch (Exception e) {
+				System.out.println("首次图片信息获取出现问题!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				day--;
+				System.out.println("正在重试获取当天信息");
+				continue;
 			}
+			for (int i = 1; i <= pages; i++) {
+				try {
+					PhotoList<Photo> photoList = photosInterface.search(params, per_page, i);
+					System.out.println("正在保存第" + i + "页...");
+					for (int j = 0; j < photoList.size(); j++) {
+						Photo photo = photoList.get(j);
+						// System.out.println("第" + i + "页，第" + (j + 1) + "条");
+
+						String photoId = photo.getId();
+						// System.out.print("照片ID：" + photoId);// 照片ID
+
+						String ownerId = photo.getOwner().getId();// 用户ID
+						// System.out.print("用户ID：" + ownerId);
+
+						// System.out.println("正在尝试保存第" + ++total + "张图片信息");
+
+						try {
+							// photoId,ownerId
+							pstmt = conn.prepareStatement(sql);
+							pstmt.setString(1, photoId);
+							pstmt.setString(2, ownerId);
+							pstmt.executeUpdate();
+						} catch (SQLException e) {
+							System.out.println("错误：第" + j + "张图片信息保存失败!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+							// e.printStackTrace();
+						}
+						// System.out.println("第" + total + "张图片信息保存成功");
+						// System.out.println("------------------------------------------------");
+					}
+				} catch (Exception e1) {
+					// org.scribe.exceptions.OAuthConnectionException
+					System.out.println("第" + i + "页信息获取出现问题，正在重试!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					i--;
+				}
+			}
+
+			// 获取完一个月后
+			maxTakenDate = changeDate(maxTakenDate);
+			minTakenDate = changeDate(minTakenDate);
 		}
 
+	}
+
+	/**
+	 * 修改日期 将输入日期减1天
+	 * 
+	 * @param date
+	 *            修改前的日期
+	 * @return 修改后的日期
+	 */
+	public Date changeDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.DATE, -1);
+		return calendar.getTime();
+	}
+
+	public void getDetail(String id) {
+		REST rest = new REST();
+		rest.setProxy(proxyHost, proxyPort);
+		Flickr f = new Flickr(apiKey, sharedSecret, rest);
+		GeoInterface geoInterface = f.getGeoInterface();
 	}
 
 	@Test
