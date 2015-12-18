@@ -55,6 +55,9 @@ public class Main {
 		demo.getGeneral();
 	}
 
+	/**
+	 * 根据制定条件，获取图片ID信息
+	 */
 	@Test
 	public void getGeneral() {
 
@@ -65,8 +68,8 @@ public class Main {
 
 		SearchParameters params = new SearchParameters();
 		params.setBBox("114.0333", "39.7667", "116.5333", "40.0167");
-		Date maxTakenDate = new Date(115, 11, 15);
-		Date minTakenDate = new Date(115, 11, 14);
+		Date maxTakenDate = new Date(106, 10, 21);
+		Date minTakenDate = new Date(106, 10, 20);
 		int pages = 0;
 		int per_page = 250;// 每页记录数
 		long total = 0;
@@ -174,6 +177,9 @@ public class Main {
 		GeoInterface geoInterface = f.getGeoInterface();
 	}
 
+	/**
+	 * 旧方法
+	 */
 	@Test
 	public void doSearch() {
 		REST rest = new REST();
