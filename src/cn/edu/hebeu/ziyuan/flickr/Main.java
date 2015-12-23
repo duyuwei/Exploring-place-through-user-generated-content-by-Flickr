@@ -169,12 +169,36 @@ public class Main {
 		calendar.add(Calendar.DATE, -1);
 		return calendar.getTime();
 	}
+	
+	@Test
+	public void doDetails(){
+		String id;
+		Photo photo;
+		FlickrDao dao = new FlickrDao();
+		
+		while(true){
+			id = dao.getNoDetailItemID();
+			try {
+				photo = getDetails(id);
+			} catch (Exception e) {
+				System.out.println(id+"获取详细信息出错，稍后重试");
+				continue;
+			}
+			dao.saveDetail(photo);
+		}
+		
+	}
 
-	public void getDetail(String id) {
+	public Photo getDetails(String photoId) throws Exception {
 		REST rest = new REST();
 		rest.setProxy(proxyHost, proxyPort);
 		Flickr f = new Flickr(apiKey, sharedSecret, rest);
+		PhotosInterface photosInterface = f.getPhotosInterface();
 		GeoInterface geoInterface = f.getGeoInterface();
+		Photo photo = photosInterface.getInfo(photoId, null); //通用信息
+		photo.setGeoData(geoInterface.getLocation(photoId)); // 地理位置
+		
+		return photo;
 	}
 
 	/**
