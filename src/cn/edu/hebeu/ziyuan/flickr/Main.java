@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.REST;
+import com.flickr4java.flickr.photos.GeoData;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photos.PhotosInterface;
@@ -179,11 +180,15 @@ public class Main {
 
 		while (true) {
 			id = dao.getNoDetailItemID();
-			System.out.println("saving:" + id);
+			System.out.println("saving:id - " + id);
 			try {
 				photo = getDetails(id);
 			} catch (Exception e) {
-				System.out.println(id + "获取详细信息出错，稍后重试");
+				System.out.println(id + "Get detailed information error, try again later");
+				System.out.println(e.getMessage());
+				if ("1: Photo not found".equals(e.getMessage())) {
+					dao.setNotFindPic(id);
+				}
 				continue;
 			}
 			dao.saveDetail(photo);

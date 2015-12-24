@@ -60,4 +60,18 @@ public class FlickrDao {
 		}
 
 	}
+	
+	public void setNotFindPic(String id){
+		JdbcUtils jdbcUtils = new JdbcUtils();
+		String sql = "UPDATE Info SET lon = ? where photoID =?";
+		// 设置参数
+		List<Object> params = new ArrayList<Object>();
+		params.add(-999);
+		params.add(id);
+		try {
+			jdbcUtils.updateByPreparedStatement(sql, params);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }
